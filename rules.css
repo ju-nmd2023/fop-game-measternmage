@@ -1,0 +1,52 @@
+@font-face {
+    font-family:'customFont';
+    src: url('ARCADE-Bold-Italic.otf');
+}
+a {
+    color: inherit;
+    text-decoration: none;
+}
+body {
+    background-image: url('bg_game.png');
+    background-size: cover;
+    color: green;
+}
+.ruleset {
+    max-width: 1200pt;
+    margin: 0px auto;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.75); 
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'customFont';
+    font-size: 16pt;
+}
+h1 {
+    color: aliceblue;
+    text-align: center;
+    font-size: 60pt;
+    margin-top: 2vh;
+    font-family: 'customFont';
+}
+.home {
+    
+    position: absolute;
+    left: 50%;
+    top: 82%;
+    transform: translate(-50%, 50%);
+    border: 2px solid;
+    border-radius: 100px;
+    padding: 20px;
+    padding-right: 50px;
+    padding-left: 50px;
+    color: white;
+    font-size: 30pt;
+    font-family: 'customFont';
+    cursor: pointer;
+    transition: color 0.3s ease-in-out;
+}
+
+.home:hover {
+    color: white;
+    background-color: green;
+}
