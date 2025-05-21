@@ -1,7 +1,8 @@
 let canva;
 let player;
 let obstacles = [];
-let gameState = "play"; 
+let hardObstacles = [];
+let gameState = "play";
 
 function setup() {
   canva = createCanvas(1000, 1000);
@@ -14,16 +15,14 @@ function draw() {
 
   if (gameState === "play") {
     drawGame();
-  } else if (gameState === "win") {
-    winScreen();
-  } else if (gameState === "lose") {
-    loseScreen();
   }
 }
 
 function startGame() {
   player = new Player(500, 950);
   obstacles = [];
+  hardObstacles = [];
+
   for (let i = 0; i < 3; i++) {
     let y = 700 - i * 60;
     for (let j = 0; j < 4; j++) {
@@ -32,24 +31,43 @@ function startGame() {
       obstacles.push(new Obstacle(x, y, speed));
     }
   }
+
+  for (let i = 0; i < 2; i++) {
+    let y = 300 - i * 60;
+    for (let j = 0; j < 5; j++) {
+      let x = j * 200;
+      let speed = (i % 2 === 0) ? 4 : -4;
+      hardObstacles.push(new Obstacle(x, y, speed, true));
+    }
+  }
+
   gameState = "play";
 }
 
 function drawGame() {
   fill(0, 100, 0);
-  rect(0, 0, width, 100); 
-  rect(0, 900, width, 100); 
+  rect(0, 0, width, 100);
+  rect(0, 900, width, 100);
 
   for (let obs of obstacles) {
     obs.update();
     obs.show();
+    if (obs.hits(player)) {
+      gameState = "lose";
+    }
+  }
+
+  for (let obs of hardObstacles) {
+    obs.update();
+    obs.show();
+    if (obs.hits(player)) {
+      gameState = "lose";
+    }
   }
 
   player.update();
   player.show();
-
 }
-
 
 function keyPressed() {
   if (gameState === "play") {
@@ -71,55 +89,62 @@ function windowResized() {
 }
 
 class Player {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.size = 50;
-    }
-  
-    move(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      this.x = constrain(this.x, 0, width - this.size);
-      this.y = constrain(this.y, 0, height - this.size);
-    }
-  
-    update(){}
-      
-  
-    show() {
-      fill(255);
-      rect(this.x, this.y, this.size, this.size);
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = 50;
+  }
+
+  move(dx, dy) {
+    this.x += dx;
+    this.y += dy;
+    this.x = constrain(this.x, 0, width - this.size);
+    this.y = constrain(this.y, 0, height - this.size);
+  }
+
+  update() {}
+
+  show() {
+    fill(255);
+    rect(this.x, this.y, this.size, this.size);
+  }
+}
+
+class Obstacle {
+  constructor(x, y, speed, isHard = false) {
+    this.x = x;
+    this.y = y;
+    this.w = isHard ? 50 : 80;
+    this.h = isHard ? 30 : 40;
+    this.speed = speed;
+    this.isHard = isHard;
+  }
+
+  update() {
+    this.x += this.speed;
+    if (this.x > width) this.x = -this.w;
+    if (this.x < -this.w) this.x = width;
+
+    if (this.isHard) {
+      this.y += sin(frameCount * 0.1) * 0.5;
     }
   }
-  
-  class Obstacle {
-    constructor(x, y, speed) {
-      this.x = x;
-      this.y = y;
-      this.w = 80;
-      this.h = 40;
-      this.speed = speed;
+
+  show() {
+    if (this.isHard) {
+      fill(0, 0, 255); 
+    } else {
+      fill(255, 165, 0); 
     }
-  
-    update() {
-      this.x += this.speed;
-      if (this.x > width) this.x = -this.w;
-      if (this.x < -this.w) this.x = width;
-    }
-  
-    show() {
-      fill(200, 0, 0);
-      rect(this.x, this.y, this.w, this.h);
-    }
-  
-    hits(player) {
-      return (
-        player.x < this.x + this.w &&
-        player.x + player.size > this.x &&
-        player.y < this.y + this.h &&
-        player.y + player.size > this.y
-      );
-    }
+    rect(this.x, this.y, this.w, this.h);
   }
-  
+
+  hits(player) {
+    return (
+      player.x < this.x + this.w &&
+      player.x + player.size > this.x &&
+      player.y < this.y + this.h &&
+      player.y + player.size > this.y
+    );
+  }
+}
