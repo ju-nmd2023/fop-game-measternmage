@@ -53,16 +53,13 @@ function startGame() {
 }
 
 function drawGame() {
-  // Safe zones
   fill(0, 100, 0);
   rect(0, 0, width, 100);
   rect(0, 900, width, 100);
 
-  // River background
   fill(0, 0, 150);
   rect(0, riverY, width, 180);
-
-  // Draw lilys (lilypads)
+  
   let onLily = false;
   for (let lily of lilys) {
     lily.update();
@@ -73,7 +70,6 @@ function drawGame() {
     }
   }
 
-  // Draw obstacles
   for (let obs of obstacles) {
     obs.update();
     obs.show();
@@ -82,7 +78,6 @@ function drawGame() {
     }
   }
 
-  // Water hazard
   if (
     player.y < riverY + 180 &&
     player.y + player.size > riverY &&
@@ -91,7 +86,7 @@ function drawGame() {
     loseLife();
   }
 
-  // Reached top
+  
   if (player.y < 100) {
     score++;
     if (score >= 5) {
