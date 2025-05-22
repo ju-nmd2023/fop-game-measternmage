@@ -1,8 +1,10 @@
 let canva;
 let player;
 let obstacles = [];
-let hardObstacles = [];
+let lilys = [];
 let gameState = "play";
+
+let riverY = 300; 
 
 function setup() {
   canva = createCanvas(1000, 1000);
@@ -15,13 +17,13 @@ function draw() {
 
   if (gameState === "play") {
     drawGame();
-  }
+  } 
 }
 
 function startGame() {
   player = new Player(500, 950);
   obstacles = [];
-  hardObstacles = [];
+  lilys = [];
 
   for (let i = 0; i < 3; i++) {
     let y = 700 - i * 60;
@@ -32,12 +34,12 @@ function startGame() {
     }
   }
 
-  for (let i = 0; i < 2; i++) {
-    let y = 300 - i * 60;
-    for (let j = 0; j < 5; j++) {
-      let x = j * 200;
-      let speed = (i % 2 === 0) ? 4 : -4;
-      hardObstacles.push(new Obstacle(x, y, speed, true));
+  for (let i = 0; i < 3; i++) {
+    let y = riverY + 120 - i * 60;
+    for (let j = 0; j < 3; j++) {
+      let x = j * 350;
+      let speed = (i % 2 === 0) ? 2 : -2;
+      lilys.push(new Lilys(x, y, speed));
     }
   }
 
@@ -49,6 +51,19 @@ function drawGame() {
   rect(0, 0, width, 100);
   rect(0, 900, width, 100);
 
+  fill(0, 0, 150);
+  rect(0, riverY, width, 180);
+
+  let onLily = false;
+  for (let lily of lilys) {
+    lily.update();
+    lily.show();
+    if (lily.carries(player)) {
+      onLily = true;
+      player.x += lily.speed;
+    }
+  }
+
   for (let obs of obstacles) {
     obs.update();
     obs.show();
@@ -57,12 +72,8 @@ function drawGame() {
     }
   }
 
-  for (let obs of hardObstacles) {
-    obs.update();
-    obs.show();
-    if (obs.hits(player)) {
-      gameState = "lose";
-    }
+  if (player.y < riverY + 180 && player.y + player.size > riverY && !onLily) {
+    gameState = "lose";
   }
 
   player.update();
@@ -88,6 +99,7 @@ function windowResized() {
   centerCanvas();
 }
 
+
 class Player {
   constructor(x, y) {
     this.x = x;
@@ -111,35 +123,56 @@ class Player {
 }
 
 class Obstacle {
-  constructor(x, y, speed, isHard = false) {
+  constructor(x, y, speed) {
     this.x = x;
     this.y = y;
-    this.w = isHard ? 50 : 80;
-    this.h = isHard ? 30 : 40;
+    this.w = 80;
+    this.h = 40;
     this.speed = speed;
-    this.isHard = isHard;
   }
 
   update() {
     this.x += this.speed;
     if (this.x > width) this.x = -this.w;
     if (this.x < -this.w) this.x = width;
-
-    if (this.isHard) {
-      this.y += sin(frameCount * 0.1) * 0.5;
-    }
   }
 
   show() {
-    if (this.isHard) {
-      fill(0, 0, 255); 
-    } else {
-      fill(255, 165, 0); 
-    }
+    fill(200, 0, 0);
     rect(this.x, this.y, this.w, this.h);
   }
 
   hits(player) {
+    return (
+      player.x < this.x + this.w &&
+      player.x + player.size > this.x &&
+      player.y < this.y + this.h &&
+      player.y + player.size > this.y
+    );
+  }
+}
+
+class Lilys {
+  constructor(x, y, speed) {
+    this.x = x;
+    this.y = y;
+    this.w = 150;
+    this.h = 40;
+    this.speed = speed;
+  }
+
+  update() {
+    this.x += this.speed;
+    if (this.x > width) this.x = -this.w;
+    if (this.x < -this.w) this.x = width;
+  }
+
+  show() {
+    fill(134, 164, 116);
+    ellipse(this.x + this.w / 2, this.y + this.h / 2, this.w, this.h);
+  }
+
+  carries(player) {
     return (
       player.x < this.x + this.w &&
       player.x + player.size > this.x &&
