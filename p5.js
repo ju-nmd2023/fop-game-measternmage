@@ -5,6 +5,8 @@ let lilys = [];
 let gameState = "play";
 
 let riverY = 300; 
+let lives = 3;
+let score = 0;
 
 function setup() {
   canva = createCanvas(1000, 1000);
@@ -17,7 +19,11 @@ function draw() {
 
   if (gameState === "play") {
     drawGame();
-  } 
+  } else if (gameState === "lose") {
+    loseScreen();
+  } else if (gameState === "win") {
+    winScreen();
+  }
 }
 
 function startGame() {
@@ -47,13 +53,16 @@ function startGame() {
 }
 
 function drawGame() {
+  // Safe zones
   fill(0, 100, 0);
   rect(0, 0, width, 100);
   rect(0, 900, width, 100);
 
+  // River background
   fill(0, 0, 150);
   rect(0, riverY, width, 180);
 
+  // Draw lilys (lilypads)
   let onLily = false;
   for (let lily of lilys) {
     lily.update();
@@ -64,20 +73,51 @@ function drawGame() {
     }
   }
 
+  // Draw obstacles
   for (let obs of obstacles) {
     obs.update();
     obs.show();
     if (obs.hits(player)) {
-      gameState = "lose";
+      loseLife();
     }
   }
 
-  if (player.y < riverY + 180 && player.y + player.size > riverY && !onLily) {
-    gameState = "lose";
+  // Water hazard
+  if (
+    player.y < riverY + 180 &&
+    player.y + player.size > riverY &&
+    !onLily
+  ) {
+    loseLife();
+  }
+
+  // Reached top
+  if (player.y < 100) {
+    score++;
+    if (score >= 5) {
+      gameState = "win";
+    } else {
+      player = new Player(500, 950); 
+    }
   }
 
   player.update();
   player.show();
+
+  
+  fill(255);
+  textSize(24);
+  text(`Lives: ${lives}`, 500, 60);
+  text(`Score: ${score}`, 400, 60);
+}
+
+function loseLife() {
+  lives--;
+  if (lives <= 0) {
+    gameState = "lose";
+  } else {
+    player = new Player(500, 950); 
+  }
 }
 
 function keyPressed() {
@@ -86,7 +126,33 @@ function keyPressed() {
     if (keyCode === RIGHT_ARROW) player.move(50, 0);
     if (keyCode === UP_ARROW) player.move(0, -50);
     if (keyCode === DOWN_ARROW) player.move(0, 50);
+  } else if (gameState === "lose" || gameState === "win") {
+    if (key === 'r' || key === 'R') {
+      lives = 2;
+      score = 0;
+      startGame();
+    }
   }
+}
+
+function loseScreen() {
+  background(0);
+  fill(255, 0, 0);
+  textSize(64);
+  textAlign(CENTER, CENTER);
+  text("HAHA! YOU LOSE", width / 2, height / 2 - 40);
+  textSize(32);
+  text("Press 'R' to Restart", width / 2, height / 2 + 40);
+}
+
+function winScreen() {
+  background(0);
+  fill(0, 150, 0);
+  textSize(64);
+  textAlign(CENTER, CENTER);
+  text("Well Well Well, YOU WIN!", width / 2, height / 2 - 40);
+  textSize(32);
+  text("Press 'R' to Play Again", width / 2, height / 2 + 40);
 }
 
 function centerCanvas() {
@@ -98,7 +164,6 @@ function centerCanvas() {
 function windowResized() {
   centerCanvas();
 }
-
 
 class Player {
   constructor(x, y) {
